@@ -159,10 +159,7 @@ void setup()
 
     for (int i = 0; i < usersCount; i++)
     {
-        // res = modem.sendSMS(users[i], String("La Alarma de incendio ha sido activada " + ctrz));
-        res = SerialAT.println("AT + CMGS = \"" + users[i] + "\"");
-        sms = "La Alarma de incendio ha sido activada";
-        res = SerialAT.println(sms + " " + ctrz);
+        res = modem.sendSMS(users[i], String("La Alarma de incendio ha sido activada " + ctrz));
         DBG("SMS:", res ? "OK" : "fail");
         delay(100);
 
