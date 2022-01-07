@@ -1,0 +1,385 @@
+/**
+ * Archivo de Programación para la Alarma Comunitaria Zenit
+ *
+ * Zenit Alarma Comunitaria, Archivo principal de Programación
+ * inclución de librerias y de archivos necesarios
+ * para el correcto funcionamiento de la Alarma Zenit
+ *
+ * Copyright (C) 2021 Ing. Sergio L. Rondon M.
+ *
+ * LICENSE: This file is part of Zenit.
+ *
+ * Zenit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * Zenit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @category   Principal
+ * @package    AlarmaComunitaria
+ * @author     Ing. Sergio L. Rondón M. <sl.rondon.m@gmail.com>
+ * @copyright  2021 Ing. Sergio L. Rondon M.
+ * @license    https://www.gnu.org/licenses/gpl-3.0.txt  GPL-3.0-or-later
+ * @version    SVN: $Id$
+ * @link       http://pear.php.net/package/PackageName
+ * @see        NetOther, Net_Sample::Net_Sample()
+ * @since      File available since Release 1.2.0
+ * @deprecated File deprecated in Release 2.0.0
+ */
+
+#define SIM800L_IP5306_VERSION_20190610
+
+// Define the serial console for debug prints, if needed
+#define DUMP_AT_COMMANDS
+#define TINY_GSM_DEBUG SerialMon
+#include <string.h>
+#include "utilities.h"
+
+// Set serial for debug console (to the Serial Monitor, default speed 115200)
+#define SerialMon Serial
+// Set serial for AT commands (to the module)
+#define SerialAT Serial1
+
+// Configure TinyGSM library
+#define TINY_GSM_MODEM_SIM800   // Modem is SIM800
+#define TINY_GSM_RX_BUFFER 1024 // Set RX buffer to 1Kb
+
+#include <TinyGsmClient.h>
+
+#ifdef DUMP_AT_COMMANDS
+#include <StreamDebugger.h>
+StreamDebugger debugger(SerialAT, SerialMon);
+TinyGsm modem(debugger);
+#else
+TinyGsm modem(SerialAT);
+#endif
+
+char *lower = "";
+char *response = " ";
+String res = "";
+String numSMS = "";
+bool new_data = 0;
+int relay = 0;
+
+#define SMS_TARGET "3212510238"
+
+char *msg = "+cmt: \"3212510238\"";
+char *ring = "+clip: \"3212510238\"";
+
+int usersCant = 1;
+
+long lg_Number_1 = 3212510238;
+// long lg_Number_1 = 3173701675;
+// long lg_Number_2 = 3004053280;
+// long lg_Number_3 = 3017903668;
+// long lg_Number_4 = 3185442299;
+// long lg_Number_5 = 3003102367;
+// long lg_Number_6 = 3186423625;
+// long lg_Number_7 = 3104815679;
+// long lg_Number_8 = 3123500154;
+// long lg_Number_9 = 3105500743;
+// long lg_Number_10 = 3185346832;
+// long lg_Number_11 = 3166196305;
+// long lg_Number_12 = 3163636099;
+// long lg_Number_13 = 3008446786;
+// long lg_Number_14 = 3208508311;
+// long lg_Number_15 = 3123378130;
+// long lg_Number_16 = 3155089602;
+// long lg_Number_17 = 3214429383;
+// long lg_Number_18 = 3102494041;
+// long lg_Number_19 = 3112304725;
+// long lg_Number_20 = 3008853986;
+// long lg_Number_21 = 3042051902;
+// long lg_Number_22 = 3016067413;
+// long lg_Number_23 = 3219290376;
+// long lg_Number_24 = 3112547030;
+// long lg_Number_25 = 3202694604;
+// long lg_Number_26 = 3156414470;
+// long lg_Number_27 = 3107593664;
+// long lg_Number_28 = 3222774935;
+// long lg_Number_29 = 3203375260;
+// long lg_Number_30 = 3107734974;
+// long lg_Number_31 = 3002070321;
+// long lg_Number_32 = 3212124158;
+// long lg_Number_33 = 3158005084;
+// long lg_Number_34 = 3222354823;
+// long lg_Number_35 = 3002757634;
+// long lg_Number_36 = 3202735551;
+// long lg_Number_37 = 3203023736;
+// long lg_Number_38 = 3017356250;
+// long lg_Number_39 = 3158205762;
+// long lg_Number_40 = 3118831740;
+// long lg_Number_41 = 3134226419;
+// long lg_Number_42 = 3115597880;
+// long lg_Number_43 = 3174455543;
+// long lg_Number_44 = 3114111598;
+// long lg_Number_45 = 3144809906;
+// long lg_Number_46 = 3053007834;
+// long lg_Number_47 = 3208283384;
+// long lg_Number_48 = 3162413804;
+// long lg_Number_49 = 3124240849;
+// long lg_Number_50 = 3127187068;
+// long lg_Number_51 = 3108730149;
+// long lg_Number_52 = 3145865033;
+// long lg_Number_53 = 3125656982;
+// long lg_Number_54 = 3188860458;
+// long lg_Number_55 = 3164106715;
+// long lg_Number_56 = 3003102367;
+// long lg_Number_57 = 3002070388;
+
+String users[] = {
+    "3212510238", //#1
+};
+
+char *value1 = "incendio on";
+char *value0 = "incendio off";
+char *value3 = "medico on";
+char *value2 = "medico off";
+
+#define buzzer 15
+#define relay_pin 18
+#define relay_alarma 19
+
+#include <LiquidCrystal.h>
+
+const int rs = 12, en = 14, d4 = 27, d5 = 26, d6 = 33, d7 = 32;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+void setup()
+{
+  // Set console baud rate
+  SerialMon.begin(115200);
+
+  // Set pin OUTPUT
+  pinMode(relay_pin, OUTPUT);
+  pinMode(relay_alarma, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+
+  delay(10);
+
+  // Start power management
+  if (setupPMU() == false)
+  {
+    Serial.println("Setting power error");
+  }
+
+  // Some start operations
+  setupModem();
+
+  // Set GSM module baud rate and UART pins
+  SerialAT.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
+
+  delay(6000);
+
+  SerialMon.println("Initializing modem...");
+  modem.restart();
+  // modem.init();
+
+  String modemInfo = modem.getModemInfo();
+  SerialMon.print("Modem Info: ");
+  SerialMon.println(modemInfo);
+  delay(1000);
+
+  SerialAT.println("AT"); // Once the handshake test is successful, it will back to OK
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CMGF=1\r"); // Configuring TEXT mode
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CNMI=1,2,0,0,0"); // Decides how newly arrived SMS messages should be handled
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("ATS0=2"); // Set numbers of rings before Automatically Answering the Call
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CHFA=1\r\n"); // Swap the audio channels
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CRSL=100\r\n"); // Set ringer sound level
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CLVL=100\r\n"); // Set loud speaker volume level
+  updateSerial();
+  delay(2);
+
+  SerialAT.println("AT+CLIP=1\r\n"); // Calling line identification presentation
+  updateSerial();
+  delay(1000);
+
+  // modem.sendSMS(SMS_TARGET, String("Prueba de Saldo"));
+}
+
+void loop()
+{
+  updateSerial();
+}
+
+void updateSerial()
+{
+  delay(500);
+  while (Serial.available())
+  {
+    SerialAT.write(Serial.read()); // Forward what Serial received to Software Serial Port
+  }
+  while (SerialAT.available())
+  {
+    // Serial.write(SerialAT.read());//Forward what Software Serial received to Serial Port
+
+    char add = SerialAT.read();
+    res = res + add;
+    delay(1);
+    new_data = 1;
+  }
+
+  if (new_data)
+  {
+    response = &res[0];
+    //------------------------------------------------- Converting every character of the String in lower form
+    const int length = strlen(response); // get the length of the text
+    lower = (char *)malloc(length + 1);  // allocate 'length' bytes + 1 (for null terminator) and cast to char*
+    lower[length] = 0;                   // set the last byte to a null terminator
+    //------------------------------------------------- copy all character bytes to the new buffer using tolower
+    for (int i = 0; i < length; i++)
+    {
+      lower[i] = tolower(response[i]);
+    }
+    Serial.println(lower); // printin the String in lower character form
+    Serial.println("\n");
+    relay_control(lower);
+    response = "";
+    res = "";
+    lower = "";
+    new_data = 0;
+  }
+}
+
+void relay_control(char *lower)
+{
+
+  if (strstr(lower, msg))
+  {
+
+    String source = (String)lower;
+
+    char *desti = &source[0];
+    int i = 0;
+    while (desti[i + 2] != '\n')
+      i++;
+    String destin = (String)desti;
+    source = source.substring(51);
+
+    Serial.print("Your message is = ");
+    Serial.print(source);
+    char *relay1 = &source[0];
+
+    char ctrz = 26;
+
+    if (strstr(relay1, value1))
+    {
+      for (int i = 0; i < usersCant; i++)
+      {
+        //numSMS = (String)users[i];
+        // Send SMS to Users
+        res = modem.sendSMS(users[i], String("La Alarma de incendio ha sido activada " + ctrz));
+        DBG("SMS:", res ? "OK" : "fail");
+        delay(100);
+      }
+
+      // Active Relays
+      digitalWrite(relay_pin, HIGH);
+      delay(2);
+      digitalWrite(relay_alarma, HIGH);
+      delay(2);
+      digitalWrite(buzzer, HIGH);
+      delay(2);
+
+      relay = 1;
+      return;
+    }
+
+    if (strstr(relay1, value0))
+    {
+      digitalWrite(relay_pin, LOW);
+      res = modem.sendSMS(SMS_TARGET, String("La Alarma de incendio ha sido desactivada"));
+      DBG("SMS:", res ? "OK" : "fail");
+      relay = 0;
+      return;
+    }
+
+    if (strstr(relay1, value2))
+    {
+      digitalWrite(relay_pin, HIGH);
+      res = modem.sendSMS(SMS_TARGET, String("La Alarma medica ha sido activada"));
+      DBG("SMS:", res ? "OK" : "fail");
+      relay = 1;
+      return;
+    }
+    if (strstr(relay1, value0))
+    {
+      digitalWrite(relay_pin, LOW);
+      res = modem.sendSMS(SMS_TARGET, String("La Alarma medica ha sido desactivada"));
+      DBG("SMS:", res ? "OK" : "fail");
+      relay = 0;
+      return;
+    }
+  }
+
+  if (strstr(lower, ring))
+  {
+    //relay = 0;
+
+    if (relay == 0)
+    {
+      modem.callAnswer();
+
+      digitalWrite(relay_pin, HIGH);
+      digitalWrite(relay_alarma, HIGH);
+      digitalWrite(buzzer, HIGH);
+
+      relay = 1;
+      return;
+    }
+
+    if (relay == 1)
+    {
+      modem.callHangup();
+
+      digitalWrite(relay_pin, LOW);
+      digitalWrite(relay_alarma, LOW);
+      digitalWrite(buzzer, LOW);
+
+      relay = 0;
+      return;
+    }
+  }
+}
+
+void sendSMS(String sms)
+{
+  char ctrz = 26;
+  // String sms = "";
+
+  for (int i = 0; i < usersCant; i++)
+  {
+    numSMS = (String)users[i];
+  }
+
+  modem.sendSMS(numSMS, sms + ctrz);
+  delay(1000);
+  // SerialAT.println(sms);
+  // delay(1000);
+  updateSerial();
+}
